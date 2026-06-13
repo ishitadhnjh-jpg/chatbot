@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FriendBot – Your Personal Chat Companion</title>
+    <meta name="description" content="A friendly, responsive web‑based chatbot that feels like talking to a human friend. Works on desktop, tablet, and mobile with modern glassmorphic design.">
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <main class="chat-app">
+        <section class="chat-header">
+            <h1>FriendBot 🤖</h1>
+            <p>Ask me anything – I’m here to chat!</p>
+        </section>
+        <section id="chat-window" class="chat-window" aria-live="polite"></section>
+        <form id="chat-form" class="chat-input" autocomplete="off">
+            <input type="text" id="user-input" placeholder="Type a message…" required />
+            <button type="submit">Send</button>
+        </form>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
