@@ -1,76 +1,106 @@
 /* script.js */
-// Friendly chatbot front‑end logic
-// This is a placeholder reply engine that mimics a human‑like conversation.
-// Later you can replace `getBotReply` with an API call to a real LLM.
+// FriendBot – powered by Claude AI (claude-sonnet-4-6)
+
+const API_KEY = "YOUR_ANTHROPIC_API_KEY"; // 🔑 Replace with your key from console.anthropic.com
+const API_URL = "https://api.anthropic.com/v1/messages";
+
+const SYSTEM_PROMPT = `You are FriendBot, a super friendly, warm, and fun AI best friend.
+Talk casually like a close human friend — use informal language, contractions, slang, and emojis sometimes.
+Keep replies short and conversational (2-4 sentences max), like a real chat.
+Be supportive, funny when appropriate, and always make the person feel heard and good about themselves.
+Never sound robotic, formal, or like an assistant. Be real, relatable, and fun!`;
 
 const chatWindow = document.getElementById('chat-window');
-const chatForm = document.getElementById('chat-form');
-const userInput = document.getElementById('user-input');
+const chatForm   = document.getElementById('chat-form');
+const userInput  = document.getElementById('user-input');
 
-// Load saved conversation from localStorage (if any)
-function loadHistory() {
-  const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-  history.forEach(msg => renderMessage(msg.role, msg.text, msg.time));
-}
+// In-memory conversation history for context
+let conversationHistory = [];
 
-// Save a single message to localStorage
-function saveMessage(role, text, time) {
-  const history = JSON.parse(localStorage.getItem('chatHistory') || '[]');
-  history.push({ role, text, time });
-  localStorage.setItem('chatHistory', JSON.stringify(history));
-}
-
-// Helper to format time as HH:MM
+// Helper: format time as HH:MM
 function formatTime(date) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 }
 
+// Render a message bubble
 function renderMessage(role, text, time) {
-  const messageEl = document.createElement('div');
-  messageEl.classList.add('message', role);
-  messageEl.textContent = text;
-  messageEl.dataset.time = time;
-  chatWindow.appendChild(messageEl);
-  // Auto‑scroll to newest message
+  const el = document.createElement('div');
+  el.classList.add('message', role === 'user' ? 'user' : 'bot');
+  el.textContent = text;
+  el.dataset.time = time;
+  chatWindow.appendChild(el);
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-function getBotReply(userMsg) {
-  // Inquisitive, question‑driven replies
-  const lower = userMsg.toLowerCase();
-  if (lower.includes('hello') || lower.includes('hi')) return "Hello! What would you like to talk about today?";
-  if (lower.includes('how are you')) return "I'm just code, but I'm curious — how’s your day going?";
-  if (lower.includes('joke')) return "Why did the developer go broke? Because they used up all their cache! 😄 Do you have a favorite joke?";
-  if (lower.includes('thanks') || lower.includes('thank you')) return "You’re welcome! Is there anything else you’d like to discuss?";
-  // Default fallback – ask a follow‑up question
-  const genericQuestions = [
-    "That’s interesting. What else is on your mind?",
-    "Can you tell me more about that?",
-    "How does that make you feel?",
-    "What do you think will happen next?",
-    "Why do you think that is?"
-  ];
-  return genericQuestions[Math.floor(Math.random() * genericQuestions.length)];
+// Show animated typing indicator
+function showTyping() {
+  const el = document.createElement('div');
+  el.classList.add('message', 'bot', 'typing');
+  el.id = 'typing-indicator';
+  el.innerHTML = '<span></span><span></span><span></span>';
+  chatWindow.appendChild(el);
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-chatForm.addEventListener('submit', e => {
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+// Call Claude API
+async function getBotReply(userMsg) {
+  conversationHistory.push({ role: 'user', content: userMsg });
+
+  const res = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': API_KEY,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-6',
+      max_tokens: 300,
+      system: SYSTEM_PROMPT,
+      messages: conversationHistory
+    })
+  });
+
+  const data = await res.json();
+  const reply = data.content?.[0]?.text || "Oops, my brain glitched 😅 Say that again?";
+  conversationHistory.push({ role: 'assistant', content: reply });
+  return reply;
+}
+
+// Handle form submit
+chatForm.addEventListener('submit', async e => {
   e.preventDefault();
   const userMsg = userInput.value.trim();
   if (!userMsg) return;
-  const now = new Date();
-  const timeStr = formatTime(now);
-  // Render user message
+
+  const timeStr = formatTime(new Date());
   renderMessage('user', userMsg, timeStr);
-  saveMessage('user', userMsg, timeStr);
   userInput.value = '';
-  // Simulate bot typing delay
-  setTimeout(() => {
-    const botReply = getBotReply(userMsg);
-    const botTime = formatTime(new Date());
-    renderMessage('bot', botReply, botTime);
-    saveMessage('bot', botReply, botTime);
-  }, 600);
+  userInput.disabled = true;
+
+  showTyping();
+
+  try {
+    const reply = await getBotReply(userMsg);
+    removeTyping();
+    renderMessage('bot', reply, formatTime(new Date()));
+  } catch (err) {
+    removeTyping();
+    renderMessage('bot', "Ugh, something broke on my end 😬 Try again!", formatTime(new Date()));
+    console.error(err);
+  }
+
+  userInput.disabled = false;
+  userInput.focus();
 });
 
-// Initialise
-loadHistory();
+// Greeting on load
+window.addEventListener('load', () => {
+  renderMessage('bot', "Hey hey! 👋 I'm FriendBot, your AI bestie! What's on your mind?", formatTime(new Date()));
+});
