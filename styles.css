@@ -5,7 +5,7 @@ html, body {
   padding: 0;
   height: 100%;
   font-family: 'Inter', sans-serif;
-  background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+  background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
   color: #e0e0e0;
   display: flex;
   justify-content: center;
@@ -70,8 +70,10 @@ html, body {
 
 .message.bot {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.3);
   color: #fff;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .message::after {

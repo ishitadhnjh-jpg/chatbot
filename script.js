@@ -52,7 +52,8 @@ async function fetchReply(message, history) {
     return data.content || data.message?.content || '';
   } catch (err) {
     console.error('Error fetching reply:', err);
-    return "Oops, I couldn’t think of a reply right now. Try again later.";
+    // Friendly fallback when LLM fails
+    return "Hmm, I’m having a little hiccup. Could you rephrase that?";
   }
 }
 
