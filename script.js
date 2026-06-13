@@ -52,8 +52,8 @@ async function fetchReply(message, history) {
     return data.content || data.message?.content || '';
   } catch (err) {
     console.error('Error fetching reply:', err);
-    // Friendly fallback when LLM fails
-    return "Hmm, I’m having a little hiccup. Could you rephrase that?";
+    // Friendly fallback when LLM fails – generic friendly response
+    return "I’m sorry, I’m having trouble right now. Let’s try again in a moment.";
   }
 }
 

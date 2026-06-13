@@ -10,16 +10,17 @@ app.use(express.json());
 app.post('/api/chat', async (req, res) => {
   const { messages } = req.body; // array of {role: 'user'|'assistant', content}
   try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://api.meta.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `Bearer ${process.env.META_API_KEY}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'meta-llama-2-70b-chat', // adjust model if needed
         messages,
         temperature: 0.7,
+        // stream: true // uncomment to enable streaming
       }),
     });
     const data = await response.json();
